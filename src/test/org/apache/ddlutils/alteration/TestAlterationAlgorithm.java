@@ -72,7 +72,7 @@ public class TestAlterationAlgorithm extends TestBase
         Database currentModel = parseDatabaseFromString(currentSchema);
         Database desiredModel = parseDatabaseFromString(desiredSchema);
 
-        _platform.getSqlBuilder().alterDatabase(currentModel, desiredModel, null);
+        _platform.getSqlBuilder().alterDatabase(currentModel, desiredModel, null, null);
 
         return _writer.toString();
     }

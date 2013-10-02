@@ -20,8 +20,13 @@ package org.apache.ddlutils.alteration;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -53,16 +58,19 @@ public class ModelComparator
     /** Whether comparison is case sensitive. */
     private boolean _caseSensitive;
 
+    private Class[] _disabledChangeTypes;
+    
     /**
      * Creates a new model comparator object.
      * 
      * @param platformInfo  The platform info
      * @param caseSensitive Whether comparison is case sensitive
      */
-    public ModelComparator(PlatformInfo platformInfo, boolean caseSensitive)
+    public ModelComparator(PlatformInfo platformInfo, boolean caseSensitive, Class[] disabledChangeTypes)
     {
         _platformInfo  = platformInfo;
         _caseSensitive = caseSensitive;
+        _disabledChangeTypes = disabledChangeTypes;
     }
 
     /**
@@ -76,24 +84,31 @@ public class ModelComparator
     public List compare(Database sourceModel, Database targetModel)
     {
         ArrayList changes = new ArrayList();
+        
+        Set<Class> disabledChangeTypes = new HashSet<Class>();
+        if (_disabledChangeTypes != null) {
+        	disabledChangeTypes.addAll(Arrays.asList(_disabledChangeTypes));
+        }
 
         for (int tableIdx = 0; tableIdx < targetModel.getTableCount(); tableIdx++)
         {
             Table targetTable = targetModel.getTable(tableIdx);
             Table sourceTable = sourceModel.findTable(targetTable.getName(), _caseSensitive);
 
-            if (sourceTable == null)
+            if ( (sourceTable == null) && !disabledChangeTypes.contains(AddTableChange.class))
             {
                 if (_log.isInfoEnabled())
                 {
                     _log.info("Table " + targetTable.getName() + " needs to be added");
                 }
                 changes.add(new AddTableChange(targetTable));
-                for (int fkIdx = 0; fkIdx < targetTable.getForeignKeyCount(); fkIdx++)
-                {
-                    // we have to use target table's definition here because the
-                    // complete table is new
-                    changes.add(new AddForeignKeyChange(targetTable, targetTable.getForeignKey(fkIdx)));
+                if (!disabledChangeTypes.contains(AddForeignKeyChange.class)) {
+	                for (int fkIdx = 0; fkIdx < targetTable.getForeignKeyCount(); fkIdx++)
+	                {
+	                    // we have to use target table's definition here because the
+	                    // complete table is new
+	                    changes.add(new AddForeignKeyChange(targetTable, targetTable.getForeignKey(fkIdx)));
+	                }
                 }
             }
             else
@@ -101,30 +116,57 @@ public class ModelComparator
                 changes.addAll(compareTables(sourceModel, sourceTable, targetModel, targetTable));
             }
         }
-
-        for (int tableIdx = 0; tableIdx < sourceModel.getTableCount(); tableIdx++)
-        {
-            Table sourceTable = sourceModel.getTable(tableIdx);
-            Table targetTable = targetModel.findTable(sourceTable.getName(), _caseSensitive);
-
-            if ((targetTable == null) && (sourceTable.getName() != null) && (sourceTable.getName().length() > 0))
-            {
-                if (_log.isInfoEnabled())
-                {
-                    _log.info("Table " + sourceTable.getName() + " needs to be removed");
-                }
-                changes.add(new RemoveTableChange(sourceTable));
-                // we assume that the target model is sound, ie. that there are no longer any foreign
-                // keys to this table in the target model; thus we already have removeFK changes for
-                // these from the compareTables method and we only need to create changes for the fks
-                // originating from this table
-                for (int fkIdx = 0; fkIdx < sourceTable.getForeignKeyCount(); fkIdx++)
-                {
-                    changes.add(new RemoveForeignKeyChange(sourceTable, sourceTable.getForeignKey(fkIdx)));
-                }
-            }
+        if (!disabledChangeTypes.contains(RemoveTableChange.class)) {
+        
+	        for (int tableIdx = 0; tableIdx < sourceModel.getTableCount(); tableIdx++)
+	        {
+	            Table sourceTable = sourceModel.getTable(tableIdx);
+	            Table targetTable = targetModel.findTable(sourceTable.getName(), _caseSensitive);
+	
+	            if ((targetTable == null) && (sourceTable.getName() != null) && (sourceTable.getName().length() > 0))
+	            {
+	                if (_log.isInfoEnabled())
+	                {
+	                    _log.info("Table " + sourceTable.getName() + " needs to be removed");
+	                }
+	                changes.add(new RemoveTableChange(sourceTable));
+	                // we assume that the target model is sound, ie. that there are no longer any foreign
+	                // keys to this table in the target model; thus we already have removeFK changes for
+	                // these from the compareTables method and we only need to create changes for the fks
+	                // originating from this table
+	                if (!disabledChangeTypes.contains(RemoveForeignKeyChange.class)) {
+		                for (int fkIdx = 0; fkIdx < sourceTable.getForeignKeyCount(); fkIdx++)
+		                {
+		                    changes.add(new RemoveForeignKeyChange(sourceTable, sourceTable.getForeignKey(fkIdx)));
+		                }
+	                }
+	            }
+	        }
         }
+        
+        filterDisabledChangeTypes(changes);
+        
         return changes;
+    }
+    
+    
+    protected void filterDisabledChangeTypes(Collection changeTypes) {
+    	
+    	if ( (_disabledChangeTypes == null) || (_disabledChangeTypes.length == 0) ) {
+    		return;
+    	}
+    	
+    	Iterator itr = changeTypes.iterator();
+    	Object change;
+    	while (itr.hasNext()) {
+    		change = itr.next();
+    		for (Class clazz : _disabledChangeTypes) {
+    			if (clazz.isAssignableFrom(change.getClass())) {
+    				itr.remove();
+    			}
+    		}
+    	}
+    	
     }
 
     /**

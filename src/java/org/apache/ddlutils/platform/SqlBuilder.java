@@ -459,10 +459,10 @@ public abstract class SqlBuilder
      * @param params        The parameters used in the creation of new tables. Note that for existing
      *                      tables, the parameters won't be applied
      */
-    public void alterDatabase(Database currentModel, Database desiredModel, CreationParameters params) throws IOException
+    public void alterDatabase(Database currentModel, Database desiredModel, CreationParameters params, Class[] disabledChangeTypes) throws IOException
     {
         ModelComparator comparator = new ModelComparator(getPlatformInfo(),
-                                                         getPlatform().isDelimitedIdentifierModeOn());
+                                                         getPlatform().isDelimitedIdentifierModeOn(), disabledChangeTypes);
         List            changes    = comparator.compare(currentModel, desiredModel);
 
         processChanges(currentModel, desiredModel, changes, params);

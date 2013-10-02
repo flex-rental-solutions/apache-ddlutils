@@ -89,6 +89,8 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
     private boolean _identityOverrideOn;
     /** Whether read foreign keys shall be sorted alphabetically. */
     private boolean _foreignKeysSorted;
+    
+    private Class[] _disabledChangeTypes = null;
 
     /**
      * {@inheritDoc}
@@ -97,8 +99,17 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
     {
         return _builder;
     }
+    
 
-    /**
+
+
+	public void setDisabledChangeTypes(Class[] disabledChangeTypes) {
+		_disabledChangeTypes = disabledChangeTypes;
+	}
+
+
+
+	/**
      * Sets the sql builder for this platform.
      * 
      * @param builder The sql builder
@@ -119,6 +130,9 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
         return _modelReader;
     }
+    
+    
+    
 
     /**
      * Sets the model reader for this platform.
@@ -586,7 +600,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
             StringWriter buffer = new StringWriter();
 
             getSqlBuilder().setWriter(buffer);
-            getSqlBuilder().alterDatabase(currentModel, desiredModel, null);
+            getSqlBuilder().alterDatabase(currentModel, desiredModel, null, _disabledChangeTypes);
             sql = buffer.toString();
         }
         catch (IOException ex)
@@ -619,7 +633,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
             StringWriter buffer = new StringWriter();
 
             getSqlBuilder().setWriter(buffer);
-            getSqlBuilder().alterDatabase(currentModel, desiredModel, params);
+            getSqlBuilder().alterDatabase(currentModel, desiredModel, params, _disabledChangeTypes);
             sql = buffer.toString();
         }
         catch (IOException ex)
@@ -720,7 +734,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
             StringWriter buffer = new StringWriter();
 
             getSqlBuilder().setWriter(buffer);
-            getSqlBuilder().alterDatabase(currentModel, desiredModel, null);
+            getSqlBuilder().alterDatabase(currentModel, desiredModel, null, _disabledChangeTypes);
             sql = buffer.toString();
         }
         catch (IOException ex)
@@ -753,7 +767,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
             StringWriter buffer = new StringWriter();
 
             getSqlBuilder().setWriter(buffer);
-            getSqlBuilder().alterDatabase(currentModel, desiredModel, params);
+            getSqlBuilder().alterDatabase(currentModel, desiredModel, params, _disabledChangeTypes);
             sql = buffer.toString();
         }
         catch (IOException ex)

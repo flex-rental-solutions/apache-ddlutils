@@ -48,7 +48,7 @@ public class TestModelComparator extends TestBase
         platformInfo.setHasSize(Types.NUMERIC, true);
         platformInfo.setHasSize(Types.CHAR, true);
         platformInfo.setHasSize(Types.VARCHAR, true);
-        return new ModelComparator(platformInfo, caseSensitive);
+        return new ModelComparator(platformInfo, caseSensitive, null);
     }
 
     /**
