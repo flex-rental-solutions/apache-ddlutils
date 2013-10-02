@@ -1,4 +1,4 @@
-package org.apache.ddlutils.util;
+package org.apache.ddlutils;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -28,7 +28,6 @@ import junit.framework.AssertionFailedError;
 import org.apache.commons.beanutils.DynaBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Database;
 import org.apache.ddlutils.model.Table;
