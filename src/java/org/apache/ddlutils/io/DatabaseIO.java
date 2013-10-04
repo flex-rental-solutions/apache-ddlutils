@@ -174,6 +174,8 @@ public class DatabaseIO
         model.initialize();
         return model;
     }
+    
+    
 
     /**
      * Reads the database model contained in the specified file.
@@ -215,6 +217,29 @@ public class DatabaseIO
         {
             throw new DdlUtilsException(ex);
         }
+        model.initialize();
+        return model;
+    }
+    
+    /**
+     * Reads the database model given by the reader and merges it with the given model.
+     * 
+     * @param reader The reader that returns the model XML
+     * @return The database model
+     */
+    public Database read(Reader reader, Database mergeWith) throws DdlUtilsException
+    {
+        Database model = null;
+
+        try
+        {
+            model = (Database)getReader().parse(reader);
+        }
+        catch (Exception ex)
+        {
+            throw new DdlUtilsException(ex);
+        }
+        model.mergeWith(mergeWith);
         model.initialize();
         return model;
     }
