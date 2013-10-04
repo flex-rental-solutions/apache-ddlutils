@@ -239,7 +239,7 @@ public class DatabaseIO
         {
             throw new DdlUtilsException(ex);
         }
-        model.mergeWith(mergeWith);
+        model.mergeWith(mergeWith, true);
         model.initialize();
         return model;
     }

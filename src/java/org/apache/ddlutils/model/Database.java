@@ -62,7 +62,7 @@ public class Database implements Serializable, Cloneable
      * 
      * @param otherDb The other database model
      */
-    public void mergeWith(Database otherDb) throws ModelException
+    public void mergeWith(Database otherDb, boolean skipConflicts) throws ModelException
     {
         for (Iterator it = otherDb._tables.iterator(); it.hasNext();)
         {
@@ -70,18 +70,29 @@ public class Database implements Serializable, Cloneable
 
             if (findTable(table.getName()) != null)
             {
-                // TODO: It might make more sense to log a warning and overwrite the table (or merge them) ?
-                throw new ModelException("Cannot merge the models because table "+table.getName()+" already defined in this model");
+            	if (!skipConflicts) {
+	                // TODO: It might make more sense to log a warning and overwrite the table (or merge them) ?  - Ya think?
+	                throw new ModelException("Cannot merge the models because table "+table.getName()+" already defined in this model");
+            	}
             }
-            try
-            {
-                addTable((Table)table.clone());
-            }
-            catch (CloneNotSupportedException ex)
-            {
-                // won't happen
+            else {
+	            try
+	            {
+	                addTable((Table)table.clone());
+	            }
+	            catch (CloneNotSupportedException ex)
+	            {
+	                // won't happen
+	            }
             }
         }
+    }
+    
+    public void mergeWith(Database otherDb) throws ModelException
+    {
+    	
+    	mergeWith(otherDb, false);
+    	
     }
 
     /**
