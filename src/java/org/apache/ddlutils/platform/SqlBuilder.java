@@ -963,8 +963,13 @@ public abstract class SqlBuilder
 
             Table realTargetTable = getRealTargetTableFor(desiredModel, sourceTable, targetTable);
 
+            
+            throw new RuntimeException("Destructive schema change attempted.");
+            
+            /*
             if (canMigrateData)
             {
+            	
                 Table tempTable = getTemporaryTableFor(desiredModel, targetTable);
     
                 createTemporaryTable(desiredModel, tempTable, parameters);
@@ -975,12 +980,14 @@ public abstract class SqlBuilder
                 createTable(desiredModel, realTargetTable, parameters);
                 writeCopyDataStatement(tempTable, targetTable);
                 dropTemporaryTable(desiredModel, tempTable);
+                
             }
             else
             {
                 dropTable(sourceTable);
                 createTable(desiredModel, realTargetTable, parameters);
             }
+            */
         }
     }
 
