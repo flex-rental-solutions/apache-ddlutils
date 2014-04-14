@@ -365,7 +365,7 @@ public class Database implements Serializable, Cloneable
                     }
                     if (ref.getForeignColumn() == null)
                     {
-                        Column foreignColumn = fk.getForeignTable().findColumn(ref.getForeignColumnName(), true);
+                        Column foreignColumn = fk.getForeignTable().findColumn(ref.getForeignColumnName(), false);
 
                         if (foreignColumn == null)
                         {
